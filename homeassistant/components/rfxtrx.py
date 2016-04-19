@@ -67,7 +67,7 @@ DEFAULT_SCHEMA = vol.Schema({
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
-        vol.Required(ATTR_DEVICE): VALID_DEVICE_ID,
+        vol.Required(ATTR_DEVICE): cv.string,
         vol.Optional(ATTR_DEBUG, default=False): cv.boolean,
         vol.Optional(ATTR_DUMMY, default=False): cv.boolean,
     }),
@@ -199,7 +199,6 @@ def apply_received_command(event):
             is_on = event.values['Command'] == 'On'
             # pylint: disable=protected-access
             RFX_DEVICES[device_id].update_state(is_on)
-            RFX_DEVICES[device_id].update_ha_state()
 
         elif hasattr(RFX_DEVICES[device_id], 'brightness')\
                 and event.values['Command'] == 'Set level':
@@ -209,7 +208,6 @@ def apply_received_command(event):
             # Update the rfxtrx device state
             is_on = _brightness > 0
             RFX_DEVICES[device_id].update_state(is_on, _brightness)
-            RFX_DEVICES[device_id].update_ha_state()
 
         # Fire event
         if RFX_DEVICES[device_id].should_fire_event:
@@ -274,6 +272,8 @@ class RfxtrxDevice(Entity):
         self._state = state
         self._brightness = brightness
 
+        self.update_ha_state()
+
     def _send_command(self, command, brightness=0):
         if not self._event:
             return
@@ -285,6 +285,7 @@ class RfxtrxDevice(Entity):
 
         elif command == "dim":
             for _ in range(self.signal_repetitions):
+                print(command)
                 self._event.device.send_dim(RFXOBJECT.transport,
                                             brightness)
             self._state = True
@@ -294,5 +295,7 @@ class RfxtrxDevice(Entity):
                 self._event.device.send_off(RFXOBJECT.transport)
             self._state = False
             self._brightness = 0
-
+        print(brightness, RFXOBJECT.transport.serial.out_waiting)
+        RFXOBJECT.transport.serial.flush()
+        print(brightness, RFXOBJECT.transport.serial.out_waiting)
         self.update_ha_state()

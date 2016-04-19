@@ -276,7 +276,6 @@ class TestLightRfxtrx(unittest.TestCase):
         self.assertTrue(entity.is_on)
         self.assertTrue(entity.brightness < 100)
         self.assertTrue(entity.brightness > 11)
-        print(entity.brightness)
         entity.turn_off()
         time.sleep(0.2)
         self.assertFalse(entity.is_on)

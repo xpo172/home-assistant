@@ -56,24 +56,14 @@ class RfxtrxLight(rfxtrx.RfxtrxDevice, Light):
         """Turn the light on."""
         self._stop_transition()
 
-        brightness = kwargs.get(ATTR_BRIGHTNESS)
+        brightness = kwargs.get(ATTR_BRIGHTNESS, 255)
         transition = kwargs.get(ATTR_TRANSITION)
 
         if transition is None or transition == 0:
-            if brightness is None:
-                self._brightness = 255
-                self._send_command("turn_on")
-            else:
-                if int(brightness) == self._brightness:
-                    return
-                self._brightness = brightness
-                _brightness = (brightness * 100 // 255)
-                print(_brightness)
-                self._send_command("dim", _brightness)
+            self._brightness = brightness
+            _brightness = max(brightness * 100 // 255, 1)
+            self._send_command("dim", _brightness)
             return
-
-        if brightness is None:
-            brightness = 255
 
         brightness_step = (brightness-self._brightness)\
             / (transition/UPDATE_INTERVAL)
@@ -101,8 +91,8 @@ class RfxtrxLight(rfxtrx.RfxtrxDevice, Light):
                 self.turn_off()
             return
 
-        self.turn_on(brightness=int(new_brightness))
-
+        self.turn_on(brightness=new_brightness)
+        print(brightness_step, target_brightness, new_brightness, new_brightness * 100 // 255)
         args = (brightness_step, target_brightness)
         self.transition_timer = \
             Timer(UPDATE_INTERVAL, self._transition_update, args)
