@@ -61,7 +61,7 @@ Examples of devices it can interface it:
 -  `See full list of supported
    devices <https://home-assistant.io/components/>`__
 
-Built home automation on top of your devices:
+Build home automation on top of your devices:
 
 -  Keep a precise history of every change to the state of your house
 -  Turn on the lights when people get home after sun set
